@@ -40,7 +40,6 @@ void setupTSC(void);
 volatile int rupt = 0;
 volatile unsigned int AV;
 
-
 int main(void)
 {
   HAL_Init();
@@ -61,15 +60,12 @@ int main(void)
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
 		
 	/*TSC Pins Initialization*/
-	GPIO_InitTypeDef initStr2 = {GPIO_PIN_1, GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
-	GPIO_InitTypeDef initStr3 = {GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
+	GPIO_InitTypeDef initStr2 = {GPIO_PIN_1, GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP}; //Capacitor
+	GPIO_InitTypeDef initStr3 = {GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP}; //Channel
 	HAL_GPIO_Init(GPIOA, &initStr2); // Initialize pins PA1
 	HAL_GPIO_Init(GPIOA, &initStr3); // Initialize pins PA2
 	
-	
-	GPIOA->AFR[0] &= ~((uint32_t)(15 << 4)); //Zero pin 1
 	GPIOA->AFR[0] |= (uint32_t)(3 << 4); //Set AF3:0011
-	GPIOA->AFR[0] &= ~((uint32_t)(15 << 8)); //Zero pin 2
 	GPIOA->AFR[0] |= (uint32_t)(3 << 8); //Set AF3:0011
 	
 	setupTSC();
@@ -77,24 +73,17 @@ int main(void)
   while (1)
   {
 
-		//Manually Discharge capacitor by clearing IODEF in CR REG - 1ms delay
-		TSC->CR &= ~(0x10); 
-		HAL_Delay(1);
-		//SET IODEF high if interlaced or low if push button?
-		//TSC->CR &= ~(0x10); 
-		TSC->CR |= 0x10; 
-		//Select channel want to sample in IO_CCR: IO_GIO3
-		//start measurement loop using start bit in CR register
-		TSC->CR |= 0x02; //Start New Acquistion
-		
-		
-		
-		
-		while(!rupt){
+		  //Manually Discharge capacitor by clearing IODEF in CR REG - 1ms delay
+   		TSC->CR &= ~(0x10); 
+   		HAL_Delay(1);
+   		//SET IODEF high if interlaced or low if push button?
+  		TSC->CR &= ~(0x10); 
+   		//TSC->CR |= 0x10; 
+		  TSC->CR |= 0x02; //Start New Acquistion
+		while(rupt != 1){
 		}
-		rupt = 0;
-    TSC->CR |= 0x02; //restart acquisition
-		
+
+		AV = TSC_IOGXCR_CNT; /* Get G1 counter value */
 		//Read value from TSC and light up LED: MAX 16383
 		if (AV <= 4000)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
@@ -104,39 +93,35 @@ int main(void)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 		else if (AV <= 16383)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+		HAL_Delay(1000);
 		
-		HAL_Delay(100);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); 
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-		
+		rupt = 0;
+
   }
 
 }
-	
+	void TSC_IRQHandler(void) {
+		TSC->ICR |= 0x03; //clear interrupts
+		rupt = 1;
+}
 void setupTSC(void) {	
 	
-	TSC->IER= 0x01; //enable end of acquisition interrupt
-	
-	TSC->IOSCR |= 0x04; //enable G1_IO3 (PA2) as sampling capacitor
-	TSC->IOCCR |= 0x02; //enable G1_IO2 (PA1) as channel/sense pin
+	TSC->IER |= 0x01; //enable end of acquisition interrupt
+	TSC->IOSCR |= 0x02; //enable G1_IO2 (PA1) as sampling capacitor
+  TSC->IOHCR &= ~(0x02); //disable hysteresis on PA1
+	//TSC->IOASCR |= 0x02; //Set GI_I02 analog switch closed 
+	TSC->IOCCR |= 0x04; //enable G1_IO3 (PA2) as channel/sense pin
 	TSC->IOGCSR |= 0x01; //enable G1 analog group
-	TSC->IOHCR &= ~(0x06); //disable hysteresis on PA1 and PA2 
-	
-	TSC->IOASCR |= 0x04; //Set GI_I03 analog switch closed 
-	NVIC_EnableIRQ(TSC_IRQn); //Enable TSC Interrupt
 	TSC->CR |= 0x00C0; //Define Maximum number of count pulses
 	TSC->CR |= 0x01; //Enable TSC
-		
+	NVIC_EnableIRQ(TSC_IRQn); //Enable TSC Interrupt
 }
 
-void TSC_IRQHandler(void) {
-		//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-		AV = TSC->IOGXCR[0]; /* Get G1 counter value */
-		rupt = 1;
-		TSC->ICR |= 0x03; //clear interrupts
-}
+
 
 /** System Clock Configuration*/
 void SystemClock_Config(void)

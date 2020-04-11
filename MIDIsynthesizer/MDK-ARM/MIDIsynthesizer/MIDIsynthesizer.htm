@@ -3,7 +3,7 @@
 <title>Static Call Graph - [MIDIsynthesizer\MIDIsynthesizer.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image MIDIsynthesizer\MIDIsynthesizer.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sat Apr 11 15:25:06 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sat Apr 11 16:58:56 2020
 <BR><P>
 <H3>Maximum Stack Usage =        272 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -384,7 +384,7 @@ Global Symbols
 <P><STRONG><a name="[27]"></a>SystemInit</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, system_stm32f0xx.o(i.SystemInit))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f072xb.o(.text)
 </UL>
-<P><STRONG><a name="[e]"></a>TSC_IRQHandler</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, main.o(i.TSC_IRQHandler))
+<P><STRONG><a name="[e]"></a>TSC_IRQHandler</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, main.o(i.TSC_IRQHandler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f072xb.o(RESET)
 </UL>
 <P><STRONG><a name="[3a]"></a>__ARM_common_ll_muluu</STRONG> (Thumb, 48 bytes, Stack size 24 bytes, stm32f0xx_hal_rcc.o(i.__ARM_common_ll_muluu))
@@ -399,7 +399,7 @@ Global Symbols
 
 <P><STRONG><a name="[52]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
-<P><STRONG><a name="[26]"></a>main</STRONG> (Thumb, 382 bytes, Stack size 64 bytes, main.o(i.main))
+<P><STRONG><a name="[26]"></a>main</STRONG> (Thumb, 352 bytes, Stack size 64 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 272<LI>Call Chain = main &rArr; SystemClock_Config &rArr; HAL_RCC_ClockConfig &rArr; HAL_RCC_GetSysClockFreq &rArr; __aeabi_uldivmod &rArr; __aeabi_llsl
 </UL>
 <BR>[Calls]<UL><LI><a href="#[31]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Init
@@ -412,10 +412,8 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL>
-<P><STRONG><a name="[43]"></a>setupTSC</STRONG> (Thumb, 66 bytes, Stack size 8 bytes, main.o(i.setupTSC))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = setupTSC
-</UL>
-<BR>[Called By]<UL><LI><a href="#[26]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<P><STRONG><a name="[43]"></a>setupTSC</STRONG> (Thumb, 60 bytes, Stack size 0 bytes, main.o(i.setupTSC))
+<BR><BR>[Called By]<UL><LI><a href="#[26]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 <P>
 <H3>
