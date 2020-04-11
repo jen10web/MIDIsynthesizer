@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"midisynthesizer\startup_stm32f072xb.o"
+"midisynthesizer\main.o"
+"midisynthesizer\stm32f0xx_it.o"
+"midisynthesizer\stm32f0xx_hal_msp.o"
+"midisynthesizer\stm32f0xx_hal_tim.o"
+"midisynthesizer\stm32f0xx_hal_tim_ex.o"
+"midisynthesizer\stm32f0xx_hal_rcc.o"
+"midisynthesizer\stm32f0xx_hal_rcc_ex.o"
+"midisynthesizer\stm32f0xx_hal.o"
+"midisynthesizer\stm32f0xx_hal_i2c.o"
+"midisynthesizer\stm32f0xx_hal_i2c_ex.o"
+"midisynthesizer\stm32f0xx_hal_gpio.o"
+"midisynthesizer\stm32f0xx_hal_dma.o"
+"midisynthesizer\stm32f0xx_hal_cortex.o"
+"midisynthesizer\stm32f0xx_hal_pwr.o"
+"midisynthesizer\stm32f0xx_hal_pwr_ex.o"
+"midisynthesizer\stm32f0xx_hal_flash.o"
+"midisynthesizer\stm32f0xx_hal_flash_ex.o"
+"midisynthesizer\stm32f0xx_hal_exti.o"
+"midisynthesizer\system_stm32f0xx.o"
+--library_type=microlib --strict --scatter "MIDIsynthesizer\MIDIsynthesizer.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "MIDIsynthesizer.map" -o MIDIsynthesizer\MIDIsynthesizer.axf
