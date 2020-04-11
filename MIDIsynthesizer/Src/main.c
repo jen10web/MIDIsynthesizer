@@ -37,6 +37,7 @@
 void SystemClock_Config(void);
 void Error_Handler(void);
 void setupTSC();
+void TS_IRQHandler();
 
 int main(void)
 {
@@ -62,12 +63,136 @@ int main(void)
 	
   while (1)
   {
+		/*Start acquisition*/
+		TSC->CR |= 0x02; //Start New Acquistion
+	
+		HAL_Delay(100);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET); 
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+		
+		short x = -11;
+		short y = 11;
+		
+		char x_hi = 0;
+		char x_lo = 0;
+		char y_hi = 0;
+		char y_lo = 0;
+		
+		/*Writing the register*/
+		I2C2 -> CR2 &= ~((uint32_t)(254));
+		I2C2 -> CR2 = 0;
+		I2C2 -> CR2 |= ((uint32_t)(0x6B << 1)); //Set to Address of L
+		I2C2 -> CR2 &= ~((uint32_t)(255 << 16));
+		I2C2 -> CR2 |= ((uint32_t)(1 << 16)); //Set Transmit 1
+		I2C2 -> CR2 &= ~((uint32_t)(1 << 10)); //Set RD_WRN
+		I2C2 -> CR2 |= ((uint32_t)(1 << 13)); //Set START
+
+		while(((I2C2 -> ISR & 2) == 0) && ((I2C2 -> ISR & 8) == 0)){ //Wait in TXIS and NAFLACK Flag
+		}
+		
+		I2C2 -> TXDR = 0xA8; //x hi
+		
+		
+		while((I2C2 -> ISR & 64) == 0){ //Wait for TC Flag
+		}	
+			
+		/*Reading the register*/
+		I2C2 -> CR2 = 0;
+		I2C2 -> CR2 |= ((uint32_t)(0x6B << 1));
+		I2C2 -> CR2 &= ~((uint32_t)(255 << 16));
+		I2C2 -> CR2 |= ((uint32_t)(2 << 16)); //Set Transmit 1
+		I2C2 -> CR2 |= ((uint32_t)(1 << 10)); //Set RD_WRN
+		I2C2 -> CR2 |= ((uint32_t)(1 << 13)); //Set START
+		
+		//Wait until RXNE or NACKF flag
+		while(((I2C2 -> ISR & 4) == 0) && ((I2C2 -> ISR & 8) == 0)){
+		}
+		
+		x_lo = I2C2 -> RXDR;
+		
+		//Wait until RXNE or NACKF flag
+		while(((I2C2 -> ISR & 4) == 0) && ((I2C2 -> ISR & 8) == 0)){
+		}
+
+		x_hi = I2C2 -> RXDR;
+		
+		
+		while((I2C2 -> ISR & 64) == 0){ //Wait for TC Flag
+		}	
+
+		I2C2 -> CR2 |= ((uint32_t)(1 << 14));//Set Stop Bit
+
+		x = x_hi;
+		x = x << 8;
+		x = x | x_lo;		
+
+		/*Writing the register*/
+		I2C2 -> CR2 &= ~((uint32_t)(254));
+		I2C2 -> CR2 = 0;
+		I2C2 -> CR2 |= ((uint32_t)(0x6B << 1)); //Set to Address of L
+		I2C2 -> CR2 &= ~((uint32_t)(255 << 16));
+		I2C2 -> CR2 |= ((uint32_t)(1 << 16)); //Set Transmit 1
+		I2C2 -> CR2 &= ~((uint32_t)(1 << 10)); //Set RD_WRN
+		I2C2 -> CR2 |= ((uint32_t)(1 << 13)); //Set START
+		
+		while(((I2C2 -> ISR & 2) == 0) && ((I2C2 -> ISR & 8) == 0)){ //Wait in TXIS and NAFLACK Flag
+		}
+		
+		I2C2 -> TXDR = 0xAA; //x hi
+		
+		
+		while((I2C2 -> ISR & 64) == 0){ //Wait for TC Flag
+		}	
+			
+		/*Reading the register*/
+		I2C2 -> CR2 = 0;
+		I2C2 -> CR2 |= ((uint32_t)(0x6B << 1));
+		I2C2 -> CR2 &= ~((uint32_t)(255 << 16));
+		I2C2 -> CR2 |= ((uint32_t)(2 << 16)); //Set Transmit 1
+		I2C2 -> CR2 |= ((uint32_t)(1 << 10)); //Set RD_WRN
+		I2C2 -> CR2 |= ((uint32_t)(1 << 13)); //Set START
+		
+		//Wait until RXNE or NACKF flag
+		while(((I2C2 -> ISR & 4) == 0) && ((I2C2 -> ISR & 8) == 0)){
+		}
+		
+		y_lo = I2C2 -> RXDR;
+		
+		//Wait until RXNE or NACKF flag
+		while(((I2C2 -> ISR & 4) == 0) && ((I2C2 -> ISR & 8) == 0)){
+		}
+
+		y_hi = I2C2 -> RXDR;
+		
+		
+		while((I2C2 -> ISR & 64) == 0){ //Wait for TC Flag
+		}	
+	
+		I2C2 -> CR2 |= ((uint32_t)(1 << 14));//Set Stop Bit
+
+		y = y_hi;
+		y = y << 8;
+		y = y | y_lo;
+		
+		
+		//Read value from TSC and light up LED
+		int threshold = 10000;
+		
+		if (x > threshold)
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+		if (x < -threshold)
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+		if (y > threshold)
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+		if (y < -threshold)
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
   }
 
 }
 	
-void setupTSC() {
-		
+void setupTSC() {	
 	/*TSC Pins Initialization*/
 	GPIO_InitTypeDef initStr2 = {GPIO_PIN_1 | GPIO_PIN_2, GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
 	HAL_GPIO_Init(GPIOA, &initStr2); // Initialize pins PA1, PA2
@@ -81,16 +206,18 @@ void setupTSC() {
 	
 	TSC->IOSCR |= 0x04; //enable G1_IO3 (PA2) as sampling capacitor
 	TSC->IOCCR |= 0x02; //enable G1_IO2 (PA1) as channel
-	
 	TSC->IOGCSR |= 0x01; //enable G1 analog group
 	TSC->IOHCR &= ~(0x06); //disable hysteresis on PA1 and PA2 
-	//TSC->IOASCR |= 0x04; //do I need this?
-	//NVIC->ISER[0] |= 1 << TS_IRQn; //enable TSC interrupt
-	TSC->CR |= 0x01 + 0x00C0 + 0x02; //enable TSC and start acquisition
+	
+	TSC->IOASCR |= 0x04; //Set GI_I03 analog switch closed 
+	NVIC_EnableIRQ(TSC_IRQn); //Enable TSC Interrupt
+	TSC->CR |= 0x00C0; //Define Maximum number of count pulses
+	TSC->CR |= 0x01; //Enable TSC
+	
 }
 
 void TS_IRQHandler() {
-    char s[16];
+    //char s[16];
     //itoa(TSC->IOGXCR[0], s, 10);
     TSC->ICR |= 0x03; //clear interrupts
     //writeLine(1, s); //prints s to LCD so I can verify delay
