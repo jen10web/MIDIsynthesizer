@@ -100,7 +100,7 @@ int main(void)
 		//Read value from TSC and light up LED: MAX 16383
 		if (AV <= 4000)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-		else if (AV <= 8000 )
+		else if (AV <= 8000)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 		else if (AV <= 12000)
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
@@ -121,9 +121,9 @@ void setupTSC(void) {
 	
 	/*TSC Pins Initialization*/
 	GPIO_InitTypeDef initStr2 = {GPIO_PIN_1, GPIO_MODE_AF_OD, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
-	GPIO_InitTypeDef initStr3 = {GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
-	HAL_GPIO_Init(GPIOA, &initStr2); // Initialize pins PA1
-	HAL_GPIO_Init(GPIOA, &initStr3); // Initialize pins PA2
+	GPIO_InitTypeDef initStr3 = {GPIO_PIN_2 | GPIO_PIN_0 | GPIO_PIN_3, GPIO_MODE_AF_PP, GPIO_SPEED_FREQ_LOW, GPIO_PULLUP};
+	HAL_GPIO_Init(GPIOA, &initStr2); // Initialize pins PA1 sampling
+	HAL_GPIO_Init(GPIOA, &initStr3); // Initialize pins PA0, PA2, PA3 electrode
 	
 	TSC->CR = TSC_CR_PGPSC_2 | TSC_CR_PGPSC_0 | TSC_CR_CTPH_0 | TSC_CR_CTPL_0
   | TSC_CR_MCV_2 | TSC_CR_MCV_1 | TSC_CR_TSCE; 
@@ -132,19 +132,28 @@ void setupTSC(void) {
 	GPIOA->AFR[0] |= (uint32_t)(3 << 4); //Set AF3:0011
 	GPIOA->AFR[0] &= ~((uint32_t)(15 << 8)); //Zero pin 2
 	GPIOA->AFR[0] |= (uint32_t)(3 << 8); //Set AF3:0011
-
+	GPIOA->AFR[0] &= ~((uint32_t)(15 << 0)); //Zero pin 0
+	GPIOA->AFR[0] |= (uint32_t)(3 << 0); //Set AF3:0011
+	GPIOA->AFR[0] &= ~((uint32_t)(15 << 12)); //Zero pin 3
+	GPIOA->AFR[0] |= (uint32_t)(3 << 12); //Set AF3:0011
+	
 	TSC->IER= 0x01; //enable end of acquisition interrupt
 	
-	TSC->IOSCR |= 0x04; //enable G1_IO3 (PA2) as sampling capacitor
-	TSC->IOCCR |= 0x02; //enable G1_IO2 (PA1) as channel/sense pin
+	TSC->IOSCR |= 0x04; //enable G1_IO3 (PA2) as electrode
+	//TSC->IOSCR |= 0x01; //enable G1_IO1 (PA0) as electrode
+	//TSC->IOSCR |= 0x08; //enable G1_IO4 (PA3) as electrode
+	
+	TSC->IOCCR |= 0x02; //enable G1_IO2 (PA1) as sampling
+	
 	TSC->IOGCSR |= 0x01; //enable G1 analog group
-	TSC->IOHCR &= ~(0x06); //disable hysteresis on PA1 and PA2 
+	TSC->IOHCR &= ~(0xF); //disable hysteresis on PA1/2/3/4
 	
 	TSC->IOASCR |= 0x04; //Set GI_I03 analog switch closed 
+	//TSC->IOASCR |= 0x01; //Set GI_I01 analog switch closed 
+	//TSC->IOASCR |= 0x08; //Set GI_I04 analog switch closed 
+
 	NVIC_EnableIRQ(TSC_IRQn); //Enable TSC Interrupt
-	//TSC->CR |= 0x00C0; //Define Maximum number of count pulses
-	TSC->CR |= 0x01; //Enable TSC
-		
+	TSC->CR |= 0x01; //Enable TSC	
 }
 
 void TSC_IRQHandler(void) {
@@ -152,6 +161,22 @@ void TSC_IRQHandler(void) {
 		AV = TSC->IOGXCR[0]; /* Get G1 counter value */
 		char str[12];
     sprintf(str, "%d\t", AV);
+		if (AV <= 4000){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			sprintf(str, "%d\t", 1);
+		}
+		else if (AV <= 8000){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+			sprintf(str, "%d\t", 2);
+		}
+		else if (AV <= 12000){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+			sprintf(str, "%d\t", 2);
+		}
+		else if (AV <= 16383){
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+			sprintf(str, "%d\t", 3);
+		}
 		TransmitString(str);
 		rupt = 1;
 		TSC->ICR |= 0x03; //clear interrupts
