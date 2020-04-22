@@ -28,6 +28,8 @@ attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h
 attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h
 attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h
 attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tsc.h
+attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h
+attempt2\main.o: ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h
 attempt2\main.o: ../Inc/touchsensing.h
 attempt2\main.o: ../Inc/tsl_conf.h
 attempt2\main.o: ../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_acq_tsc.h

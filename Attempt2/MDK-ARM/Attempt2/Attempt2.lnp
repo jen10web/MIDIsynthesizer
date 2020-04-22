@@ -22,6 +22,8 @@
 "attempt2\stm32f0xx_hal_flash_ex.o"
 "attempt2\stm32f0xx_hal_exti.o"
 "attempt2\stm32f0xx_hal_tsc.o"
+"attempt2\stm32f0xx_hal_uart.o"
+"attempt2\stm32f0xx_hal_uart_ex.o"
 "attempt2\system_stm32f0xx.o"
 "attempt2\tsl.o"
 "attempt2\tsl_acq_tsc.o"

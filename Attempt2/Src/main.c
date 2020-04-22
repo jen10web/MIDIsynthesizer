@@ -23,6 +23,8 @@
 #include "touchsensing.h"
 #include <stdlib.h>
 #include <stdio.h> /* for printf */
+
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -45,20 +47,29 @@
 /* Private variables ---------------------------------------------------------*/
 TSC_HandleTypeDef htsc;
 
+UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TSC_Init(void);
-volatile unsigned int AV;
+static void MX_USART3_UART_Init(void);
 void Transmit(char input);
 void TransmitString(char input[]);
 volatile int globalReadReg = 0;
 volatile int globalNewData = 0;
-volatile int note = 0;
+/* USER CODE BEGIN PFP */
 
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -66,10 +77,11 @@ volatile int note = 0;
   */
 int main(void)
 {
-  HAL_Init();
+	HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
   MX_TSC_Init();
+	MX_USART3_UART_Init();
   MX_TOUCHSENSING_Init();
 	/*Enable GPIOS*/
 	__HAL_RCC_GPIOA_CLK_ENABLE();
@@ -77,29 +89,23 @@ int main(void)
 	__HAL_RCC_GPIOC_CLK_ENABLE();
   RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
-	/*UART*/
+ /*UART*/
 	GPIOC->MODER |= 0x00000000;
 	GPIOC->MODER |= 0x00055A00;
 	GPIOC->AFR[0] |= 0x00110000;
 	USART3->BRR = HAL_RCC_GetHCLKFreq() / 115200; 
 	USART3->CR1 |= 0x2c;
 	USART3->CR1 |= 0x1;
-	//Initialize NVIC
-	NVIC_EnableIRQ(USART3_4_IRQn);
-	NVIC_SetPriority(USART3_4_IRQn, 1);
-
 	
   while (1)
   {
 	static uint32_t cnt=0;
-	char str[12];
 	tsl_user_status_t status = TSL_USER_STATUS_BUSY;
 	status = tsl_user_Exec();
 	if(TSL_USER_STATUS_BUSY == status)
 	{
 	// Nothing to do
 	if(cnt++%50==0){
-	note = 0;
 	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 	}
 	HAL_Delay(1);
@@ -111,21 +117,21 @@ int main(void)
 	//TSLPRM_LINROT_RESOLUTION
 	if(MyLinRots[0].p_Data->Position >= 5 && MyLinRots[0].p_Data->Position < 50)
 	{
-	note = 1;
+	Transmit('1');		
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	}
 	if(MyLinRots[0].p_Data->Position >= 50 && MyLinRots[0].p_Data->Position < 80)
 	{
-	note = 2;
+	Transmit('2');		
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	}
 	if(MyLinRots[0].p_Data->Position >= 80 && MyLinRots[0].p_Data->Position < 120)
 	{
-  note = 3;
+	Transmit('3');		
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
@@ -134,15 +140,12 @@ int main(void)
 	}
 	else //if(MyLinRots[0].p_Data->StateId == TSL_STATEID_RELEASE)
 	{
-	note = 0;
+	Transmit('0');		
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
 	}
 }
-	//Send to Uart
-  sprintf(str, "%d\t", note);
-	TransmitString(str);
 }
 }
 
@@ -167,11 +170,6 @@ void TransmitString(char input[])
 	}
 }
 
-void USART3_4_IRQHandler(void)
-{
-	globalReadReg = USART3->RDR;
-	globalNewData = 1;
-}
 
 /**
   * @brief System Clock Configuration
@@ -249,6 +247,41 @@ static void MX_TSC_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 38400;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -268,11 +301,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, LD3_Pin|LD6_Pin|LD4_Pin|LD5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC13 PC14 PC15 PC0 
-                           PC1 PC2 PC3 PC4 
-                           PC5 PC10 PC11 PC12 */
+                           PC1 PC2 PC3 PC10 
+                           PC11 PC12 */
   GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0 
-                          |GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4 
-                          |GPIO_PIN_5|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+                          |GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_10 
+                          |GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
