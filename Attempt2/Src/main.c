@@ -21,7 +21,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "touchsensing.h"
-
+#include <stdlib.h>
+#include <stdio.h> /* for printf */
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -48,18 +49,16 @@ TSC_HandleTypeDef htsc;
 
 /* USER CODE END PV */
 
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TSC_Init(void);
-/* USER CODE BEGIN PFP */
+volatile unsigned int AV;
+void Transmit(char input);
+void TransmitString(char input[]);
+volatile int globalReadReg = 0;
+volatile int globalNewData = 0;
+volatile int note = 0;
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -67,49 +66,40 @@ static void MX_TSC_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-  
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TSC_Init();
   MX_TOUCHSENSING_Init();
-  /* USER CODE BEGIN 2 */
+	/*Enable GPIOS*/
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+  RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
 
-  /* USER CODE END 2 */
- 
- 
+	/*UART*/
+	GPIOC->MODER |= 0x00000000;
+	GPIOC->MODER |= 0x00055A00;
+	GPIOC->AFR[0] |= 0x00110000;
+	USART3->BRR = HAL_RCC_GetHCLKFreq() / 115200; 
+	USART3->CR1 |= 0x2c;
+	USART3->CR1 |= 0x1;
+	//Initialize NVIC
+	NVIC_EnableIRQ(USART3_4_IRQn);
+	NVIC_SetPriority(USART3_4_IRQn, 1);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	
   while (1)
   {
-	//extern TSL_LinRot_T MyLinRots[];
 	static uint32_t cnt=0;
+	char str[12];
 	tsl_user_status_t status = TSL_USER_STATUS_BUSY;
 	status = tsl_user_Exec();
 	if(TSL_USER_STATUS_BUSY == status)
 	{
 	// Nothing to do
 	if(cnt++%50==0){
+	note = 0;
 	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 	}
 	HAL_Delay(1);
@@ -121,34 +111,66 @@ int main(void)
 	//TSLPRM_LINROT_RESOLUTION
 	if(MyLinRots[0].p_Data->Position >= 5 && MyLinRots[0].p_Data->Position < 50)
 	{
+	note = 1;
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	}
 	if(MyLinRots[0].p_Data->Position >= 50 && MyLinRots[0].p_Data->Position < 80)
 	{
+	note = 2;
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	}
 	if(MyLinRots[0].p_Data->Position >= 80 && MyLinRots[0].p_Data->Position < 120)
 	{
+  note = 3;
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
 	}
+	
 	}
 	else //if(MyLinRots[0].p_Data->StateId == TSL_STATEID_RELEASE)
 	{
+	note = 0;
 	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, GPIO_PIN_RESET);
 	}
-	}
+}
+	//Send to Uart
+  sprintf(str, "%d\t", note);
+	TransmitString(str);
+}
+}
 
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+void Transmit(char input)
+{
+	while( !(USART3->ISR & 0x80)  )//flag is not set
+	{
+		// do nothing
+	}	
+	
+	USART3->TDR = input;
+}
+
+
+void TransmitString(char input[])
+{
+	int i = 0;
+	while (input[i] != '\0')
+	{
+		Transmit(input[i]);
+		i++;
+	}
+}
+
+void USART3_4_IRQHandler(void)
+{
+	globalReadReg = USART3->RDR;
+	globalNewData = 1;
 }
 
 /**

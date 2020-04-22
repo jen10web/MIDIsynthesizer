@@ -46,3 +46,5 @@ attempt2\main.o: ../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_dxs.h
 attempt2\main.o: ../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_ecs.h
 attempt2\main.o: ../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_filter.h
 attempt2\main.o: ../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_globals.h
+attempt2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+attempt2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

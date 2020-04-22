@@ -1,7 +1,7 @@
 Dependencies for Project 'Attempt2', Target 'Attempt2': (DO NOT MODIFY !)
 CompilerVersion: 5060750::V5.06 update 6 (build 750)::ARMCC
 F (startup_stm32f072xb.s)(0x5E9A3782)(--cpu Cortex-M0 --pd "__EVAL SETA 1" -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Attempt2-IC:\Users\Lexi\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\Lexi\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.0.0\Drivers\CMSIS\Device\ST\STM32F0xx\Include--pd "__UVISION_VERSION SETA 529" --pd "_RTE_ SETA 1" --pd "STM32F072xB SETA 1"--list startup_stm32f072xb.lst --xref -o attempt2\startup_stm32f072xb.o --depend attempt2\startup_stm32f072xb.d)
-F (../Src/main.c)(0x5E9A3A52)(--c99 -c --cpu Cortex-M0 -D__EVAL -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_TouchSensing_Library/inc -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Attempt2-IC:\Users\Lexi\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\Lexi\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.0.0\Drivers\CMSIS\Device\ST\STM32F0xx\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F072xB -DUSE_HAL_DRIVER -DSTM32F072xB-o attempt2\main.o --omf_browse attempt2\main.crf --depend attempt2\main.d)
+F (../Src/main.c)(0x5EA0BE57)(--c99 -c --cpu Cortex-M0 -D__EVAL -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_TouchSensing_Library/inc -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Attempt2-IC:\Users\Lexi\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\Lexi\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.0.0\Drivers\CMSIS\Device\ST\STM32F0xx\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F072xB -DUSE_HAL_DRIVER -DSTM32F072xB-o attempt2\main.o --omf_browse attempt2\main.crf --depend attempt2\main.d)
 I (../Inc/main.h)(0x5E9A377C)
 I (../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h)(0x5E722B38)
 I (../Inc/stm32f0xx_hal_conf.h)(0x5E9A377C)
@@ -47,6 +47,8 @@ I (../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_dxs.h)(0x5E722B3B)
 I (../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_ecs.h)(0x5E722B3B)
 I (../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_filter.h)(0x5E722B3B)
 I (../Middlewares/ST/STM32_TouchSensing_Library/inc/tsl_globals.h)(0x5E722B3B)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5D9B96FA)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5D9B96FA)
 F (../Src/touchsensing.c)(0x5E9A3898)(--c99 -c --cpu Cortex-M0 -D__EVAL -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc -I ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_TouchSensing_Library/inc -I ../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Attempt2-IC:\Users\Lexi\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\Core\Include-IC:\Users\Lexi\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.0.0\Drivers\CMSIS\Device\ST\STM32F0xx\Include-D__UVISION_VERSION="529" -D_RTE_ -DSTM32F072xB -DUSE_HAL_DRIVER -DSTM32F072xB-o attempt2\touchsensing.o --omf_browse attempt2\touchsensing.crf --depend attempt2\touchsensing.d)
 I (../Inc/touchsensing.h)(0x5E9A3779)
 I (../Inc/tsl_conf.h)(0x5E9A377A)
